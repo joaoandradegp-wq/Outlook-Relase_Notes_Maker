@@ -9,8 +9,7 @@ Automação para consulta de aprovações GMUD no Outlook Web, extração das de
   <img src="https://img.shields.io/badge/Linguagem-Node.js-green">
   <img src="https://img.shields.io/badge/Automação-Playwright-blue">
   <img src="https://img.shields.io/badge/Output-PowerPoint-orange">
-  <img src="https://img.shields.io/badge/Python-python-yellow">
-  <img src="https://img.shields.io/badge/Language-PT--BR-lightgrey">
+    <img src="https://img.shields.io/badge/Language-PT--BR-lightgrey">
 </p>
 
 ---
