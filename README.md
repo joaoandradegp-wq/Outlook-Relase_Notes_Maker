@@ -17,7 +17,7 @@ Automação para consulta de aprovações GMUD no Outlook Web, extração das de
 <h2>📌 Sobre</h2>
 
 <p>
-O <b>Outlook GMUD PPTX</b> é uma ferramenta desenvolvida para automatizar a consolidação de aprovações de negócios GMUD recebidas através do <b>Outlook Web</b>.
+O <b>Release Notes Maker</b> é uma ferramenta desenvolvida para automatizar a consolidação de aprovações de negócios GMUD recebidas através do <b>Outlook Web</b>.
 </p>
 
 <p>
@@ -543,5 +543,5 @@ Essa abordagem permite manter a identidade visual original mesmo quando a quanti
 ---
 
 <p align="center">
-<b>Outlook GMUD PPTX</b> automatiza a consolidação das aprovações de negócios GMUD, transformando informações dispersas em e-mails do Outlook em uma apresentação PowerPoint estruturada e pronta para utilização.
+<b>Release Notes Maker</b> automatiza a consolidação das aprovações de negócios GMUD, transformando informações dispersas em e-mails do Outlook em uma apresentação PowerPoint estruturada e pronta para utilização.
 </p>
