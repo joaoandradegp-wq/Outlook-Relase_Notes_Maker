@@ -1,0 +1,5 @@
+node_modules/
+.owa-session
+output/*.pptx
+output/*.png
+templates/release_para_dev.pptx
