@@ -95,17 +95,13 @@ Após a extração das informações, o Node.js prepara os dados e chama o <b>ge
   <li>🔎 Pesquisa por assunto e destinatário configurado</li>
   <li>📅 Processamento do período definido durante a execução</li>
   <li>📋 Extração automática do campo <b>Registro de origem</b></li>
-  <li>🧩 Suporte à tabela <b>UAT - Implantação GMUD</b></li>
   <li>🔄 Processamento do histórico das conversas</li>
   <li>📜 Tratamento de conteúdo carregado pelo Outlook Web</li>
   <li>🛟 Fallback para extração através de texto quando necessário</li>
   <li>📊 Geração automática de apresentação PowerPoint</li>
   <li>📑 Organização das demandas encontradas no período</li>
   <li>🎨 Utilização de modelo corporativo como base visual</li>
-  <li>🔄 Duplicação dos slides conforme a quantidade de informações processadas</li>
-  <li>🧪 Suporte a diagnóstico de problemas relacionados aos seletores do Outlook</li>
   <li>🔐 Sessão persistente do navegador para evitar novo login a cada execução</li>
-  <li>▶️ Execução simplificada através do arquivo <b>gerar_releasenotes.bat</b></li>
 </ul>
 
 ---
@@ -125,8 +121,6 @@ outlook-gmud-pptx/
 │
 ├── output/
 │   ├── GMUD-AAAA-MM.pptx
-│   ├── pedido-N.png
-│   ├── resposta-N.png
 │   └── config-pptx.json
 │
 └── .owa-session/
@@ -176,36 +170,6 @@ O script utiliza o arquivo <b>release_para_dev.pptx</b> como modelo, mantendo o 
 A utilização do modelo PowerPoint permite preservar a identidade visual original da apresentação, incluindo formatação, fontes, imagens, fundos e elementos gráficos.
 </p>
 
-<h3>▶️ gerar_releasenotes.bat</h3>
-
-<p>
-Arquivo Batch utilizado para facilitar a execução da aplicação no Windows.
-</p>
-
-<p>
-O arquivo solicita o número do mês que será processado, valida o valor informado e define a variável de ambiente <b>GMUD_MES</b> antes de iniciar o <b>index.js</b>.
-</p>
-
-<p>
-O mês deve ser informado através de um número entre <b>1</b> e <b>12</b>. Também são aceitos valores com zero à esquerda, como <b>09</b>.
-</p>
-
-<p>
-O ano utilizado é o ano atual ou o anterior quando o mês informado ainda não tiver ocorrido no ano atual.
-</p>
-
-<p>
-Após a definição do mês, o Batch executa:
-</p>
-
-<pre>
-node index.js
-</pre>
-
-<p>
-Ao final do processamento, a janela permanece aberta até que o usuário pressione uma tecla.
-</p>
-
 ---
 
 <h2>📊 Estrutura da apresentação</h2>
@@ -224,34 +188,6 @@ A estrutura da apresentação é baseada nos modelos existentes no arquivo e rec
 
 <p align="center">
   <b>Modelo Corporativo → Demandas GMUD → Informações Extraídas → PowerPoint</b>
-</p>
-
----
-
-<h2>🔎 Busca dos e-mails</h2>
-
-<p>
-A busca é realizada diretamente no Outlook Web utilizando os recursos de pesquisa da própria plataforma.
-</p>
-
-<p>
-O sistema procura por e-mails cujo assunto contenha:
-</p>
-
-<pre>
-De acordo de negócios GMUD
-</pre>
-
-<p>
-O destinatário utilizado na pesquisa é definido através da configuração <b>destinatario</b> no arquivo <b>index.js</b>.
-</p>
-
-<p>
-Dessa forma, o endereço utilizado pela automação não precisa ser exposto na documentação ou diretamente no código de processamento.
-</p>
-
-<p>
-Após a busca inicial, o sistema processa os resultados individualmente para extrair as informações necessárias.
 </p>
 
 ---
@@ -600,30 +536,6 @@ e informar o mês desejado.
 Caso a sessão tenha expirado por política do tenant, o Outlook solicitará um novo login. Realize a autenticação novamente e continue o processo normalmente.
 </p>
 
-<h3>📌 Resumo rápido</h3>
-
-<pre>
-gerar_releasenotes.bat
-        ↓
-Seleção do mês
-        ↓
-GMUD_MES
-        ↓
-node index.js
-        ↓
-Login no Outlook
-        ↓
-Pressione ENTER
-        ↓
-Busca dos e-mails GMUD
-        ↓
-Extração do Registro de origem
-        ↓
-Geração do PowerPoint
-        ↓
-output/GMUD-AAAA-MM.pptx
-</pre>
-
 ---
 
 <h2>🐍 Dependências Python</h2>
@@ -693,34 +605,6 @@ Nesses casos, o DevTools do navegador pode ser utilizado para verificar a estrut
 <pre>
 AJUSTAR SE PRECISAR
 </pre>
-
----
-
-<h2>🎨 Modelo PowerPoint</h2>
-
-<p>
-O arquivo:
-</p>
-
-<pre>
-templates/release_para_dev.pptx
-</pre>
-
-<p>
-é utilizado como base visual da apresentação.
-</p>
-
-<p>
-O projeto utiliza o próprio modelo corporativo como estrutura da apresentação, evitando recriar o layout através de código.
-</p>
-
-<p>
-Os dados extraídos dos e-mails são inseridos no modelo de acordo com a estrutura definida no PowerPoint.
-</p>
-
-<p>
-Essa abordagem permite manter a identidade visual original da apresentação, incluindo fontes, imagens, fundos, posicionamento e elementos gráficos.
-</p>
 
 ---
 
