@@ -41,30 +41,45 @@ Como não existe acesso para registrar uma aplicação no <b>Azure AD/Entra ID</
 <h2>🔄 Funcionamento</h2>
 
 <pre>
-┌────────────────┐     ┌──────────────┐     ┌────────────────┐     ┌──────────────────┐
-│  Outlook Web   │ ──► │   index.js   │ ──► │ Busca / Filtro │ ──► │ E-mails GMUD     │
-└────────────────┘     └──────────────┘     └────────────────┘     └──────────────────┘
-                                                                      │
-                                                                      ▼
-                                                          ┌──────────────────────┐
-                                                          │ Registro de origem   │
-                                                          │ UAT - Implantação    │
-                                                          │ GMUD                 │
-                                                          └──────────────────────┘
-                                                                      │
-                                                                      ▼
-                                                          ┌──────────────────────┐
-                                                          │   gerar_pptx.py      │
-                                                          └──────────────────────┘
-                                                                      │
-                                                                      ▼
-                                                          ┌──────────────────────┐
-                                                          │   GMUD-AAAA-MM.pptx  │
-                                                          └──────────────────────┘
+┌──────────────────────┐
+│ gerar_releasenotes   │
+│       .bat            │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐     ┌──────────────┐     ┌────────────────┐
+│ Seleção do mês       │ ──► │   index.js   │ ──► │ Busca / Filtro │
+└──────────────────────┘     └──────────────┘     └───────┬────────┘
+                                                          │
+                                                          ▼
+                                               ┌──────────────────┐
+                                               │ E-mails GMUD     │
+                                               └────────┬─────────┘
+                                                        │
+                                                        ▼
+                                               ┌──────────────────────┐
+                                               │ Registro de origem   │
+                                               │ UAT - Implantação    │
+                                               │ GMUD                 │
+                                               └──────────┬───────────┘
+                                                          │
+                                                          ▼
+                                               ┌──────────────────────┐
+                                               │   gerar_pptx.py      │
+                                               └──────────┬───────────┘
+                                                          │
+                                                          ▼
+                                               ┌──────────────────────┐
+                                               │   GMUD-AAAA-MM.pptx  │
+                                               └──────────────────────┘
 </pre>
 
 <p>
 O fluxo principal é executado pelo <b>index.js</b>. O navegador é aberto através do Playwright, os e-mails são pesquisados no Outlook Web e cada e-mail encontrado é processado individualmente.
+</p>
+
+<p>
+A execução pode ser iniciada diretamente pelo arquivo <b>gerar_releasenotes.bat</b>, que solicita o número do mês, define a variável <b>GMUD_MES</b> e inicia o <b>index.js</b>.
 </p>
 
 <p>
@@ -78,7 +93,7 @@ Após a extração das informações, o Node.js prepara os dados e chama o <b>ge
 <ul>
   <li>📧 Busca automática de e-mails de aprovação GMUD</li>
   <li>🔎 Pesquisa por assunto e destinatário configurado</li>
-  <li>📅 Processamento automático do mês anterior ao mês de execução</li>
+  <li>📅 Processamento do período definido durante a execução</li>
   <li>📋 Extração automática do campo <b>Registro de origem</b></li>
   <li>🧩 Suporte à tabela <b>UAT - Implantação GMUD</b></li>
   <li>🔄 Processamento do histórico das conversas</li>
@@ -90,6 +105,7 @@ Após a extração das informações, o Node.js prepara os dados e chama o <b>ge
   <li>🔄 Duplicação dos slides conforme a quantidade de informações processadas</li>
   <li>🧪 Suporte a diagnóstico de problemas relacionados aos seletores do Outlook</li>
   <li>🔐 Sessão persistente do navegador para evitar novo login a cada execução</li>
+  <li>▶️ Execução simplificada através do arquivo <b>gerar_releasenotes.bat</b></li>
 </ul>
 
 ---
@@ -101,6 +117,7 @@ outlook-gmud-pptx/
 │
 ├── index.js
 ├── gerar_pptx.py
+├── gerar_releasenotes.bat
 ├── package.json
 │
 ├── templates/
@@ -110,8 +127,7 @@ outlook-gmud-pptx/
 │   ├── GMUD-AAAA-MM.pptx
 │   ├── pedido-N.png
 │   ├── resposta-N.png
-│   ├── config-pptx.json
-│   └── debug-rascunho-*.png / *.txt
+│   └── config-pptx.json
 │
 └── .owa-session/
     └── sessão persistente do Outlook
@@ -158,6 +174,36 @@ O script utiliza o arquivo <b>release_para_dev.pptx</b> como modelo, mantendo o 
 
 <p>
 A utilização do modelo PowerPoint permite preservar a identidade visual original da apresentação, incluindo formatação, fontes, imagens, fundos e elementos gráficos.
+</p>
+
+<h3>▶️ gerar_releasenotes.bat</h3>
+
+<p>
+Arquivo Batch utilizado para facilitar a execução da aplicação no Windows.
+</p>
+
+<p>
+O arquivo solicita o número do mês que será processado, valida o valor informado e define a variável de ambiente <b>GMUD_MES</b> antes de iniciar o <b>index.js</b>.
+</p>
+
+<p>
+O mês deve ser informado através de um número entre <b>1</b> e <b>12</b>. Também são aceitos valores com zero à esquerda, como <b>09</b>.
+</p>
+
+<p>
+O ano utilizado é o ano atual ou o anterior quando o mês informado ainda não tiver ocorrido no ano atual.
+</p>
+
+<p>
+Após a definição do mês, o Batch executa:
+</p>
+
+<pre>
+node index.js
+</pre>
+
+<p>
+Ao final do processamento, a janela permanece aberta até que o usuário pressione uma tecla.
 </p>
 
 ---
@@ -213,11 +259,43 @@ Após a busca inicial, o sistema processa os resultados individualmente para ext
 <h2>📅 Período de processamento</h2>
 
 <p>
-Por padrão, o sistema processa o <b>mês anterior ao mês de execução</b>.
+O período de processamento é definido através da variável de ambiente <b>GMUD_MES</b>.
 </p>
 
 <p>
-Por exemplo, uma execução realizada em outubro processará os e-mails correspondentes ao período de setembro, considerando do primeiro até o último dia do mês.
+Quando executado através do <b>gerar_releasenotes.bat</b>, o usuário informa o número do mês que deseja processar.
+</p>
+
+<p>
+O ano considerado é o atual. Caso o mês informado ainda não tenha chegado no ano atual, o sistema considera esse mês no ano anterior.
+</p>
+
+<p>
+Por exemplo, considerando uma execução em setembro:
+</p>
+
+<pre>
+Mes: 9
+
+GMUD_MES=9
+</pre>
+
+<p>
+O processamento será realizado para setembro do ano atual.
+</p>
+
+<p>
+Caso seja informado um mês que ainda não ocorreu:
+</p>
+
+<pre>
+Mes: 12
+
+GMUD_MES=12
+</pre>
+
+<p>
+O processamento será realizado considerando dezembro do ano anterior.
 </p>
 
 <p>
@@ -321,25 +399,54 @@ As principais configurações relacionadas ao comportamento da automação ficam
 
 <h2>🚀 Execução</h2>
 
+<h3>Execução através do Batch</h3>
+
 <p>
-Instale as dependências do projeto:
+No Windows, a aplicação pode ser iniciada através do arquivo:
+</p>
+
+<pre>
+gerar_releasenotes.bat
+</pre>
+
+<p>
+Ao executar o arquivo, será solicitado o número do mês:
+</p>
+
+<pre>
+==========================================
+  GMUD - Gerar PPTX
+==========================================
+
+  Digite o numero do mes (1 a 12).
+  Ex: 9 = Setembro. O ano e o atual
+  (ou o anterior, se o mes ainda nao chegou).
+
+Mes:
+</pre>
+
+<p>
+Após informar um mês válido, o Batch define a variável <b>GMUD_MES</b> e executa o:
+</p>
+
+<pre>
+node index.js
+</pre>
+
+<h3>Execução manual</h3>
+
+<p>
+Também é possível executar a aplicação diretamente pelo terminal.
 </p>
 
 <pre>
 npm install
 npx playwright install chromium
-</pre>
-
-<p>
-Depois execute:
-</p>
-
-<pre>
 npm start
 </pre>
 
 <p>
-O navegador será aberto automaticamente.
+O navegador será aberto automaticamente para acesso ao Outlook Web.
 </p>
 
 ---
@@ -347,7 +454,7 @@ O navegador será aberto automaticamente.
 <h2>📖 Como utilizar</h2>
 
 <p>
-O <b>Release Notes Maker</b> foi desenvolvido para gerar automaticamente o relatório mensal de aprovações de negócios GMUD a partir dos e-mails disponíveis no Outlook Web.
+O <b>Release Notes Maker</b> foi desenvolvido para gerar apresentações de aprovações de negócios GMUD a partir dos e-mails disponíveis no Outlook Web.
 </p>
 
 <h3>1. Instale as dependências</h3>
@@ -361,17 +468,51 @@ npm install
 npx playwright install chromium
 </pre>
 
-<h3>2. Inicie a aplicação</h3>
+<h3>2. Verifique o modelo PowerPoint</h3>
 
 <p>
-Execute:
+Confirme se o modelo corporativo está disponível em:
 </p>
 
 <pre>
-npm start
+templates/release_para_dev.pptx
 </pre>
 
-<h3>3. Faça o login no Outlook</h3>
+<h3>3. Execute o arquivo Batch</h3>
+
+<p>
+No Windows, execute:
+</p>
+
+<pre>
+gerar_releasenotes.bat
+</pre>
+
+<p>
+O programa solicitará o número do mês:
+</p>
+
+<pre>
+Mes: 9
+</pre>
+
+<p>
+O valor informado será armazenado na variável:
+</p>
+
+<pre>
+GMUD_MES=9
+</pre>
+
+<p>
+Em seguida, o Batch executará automaticamente:
+</p>
+
+<pre>
+node index.js
+</pre>
+
+<h3>4. Faça o login no Outlook</h3>
 
 <p>
 Na primeira execução, uma janela do Chromium será aberta automaticamente com o Outlook Web.
@@ -381,7 +522,7 @@ Na primeira execução, uma janela do Chromium será aberta automaticamente com 
 Realize o login utilizando suas credenciais corporativas e conclua o MFA, caso seja solicitado.
 </p>
 
-<h3>4. Inicie o processamento</h3>
+<h3>5. Inicie o processamento</h3>
 
 <p>
 Após o carregamento da caixa de entrada, volte ao terminal e pressione <b>ENTER</b>.
@@ -394,10 +535,10 @@ A aplicação iniciará automaticamente a busca pelos e-mails que atendem aos cr
 <ul>
   <li>Assunto configurado em <b>assuntoBusca</b></li>
   <li>Destinatário configurado em <b>destinatario</b></li>
-  <li>Período correspondente ao mês anterior à execução</li>
+  <li>Período definido através de <b>GMUD_MES</b></li>
 </ul>
 
-<h3>5. Aguarde o processamento</h3>
+<h3>6. Aguarde o processamento</h3>
 
 <p>
 O sistema abrirá e processará os e-mails encontrados, identificará a tabela <b>UAT - Implantação GMUD</b> e extrairá os registros do campo <b>Registro de origem</b>.
@@ -407,7 +548,7 @@ O sistema abrirá e processará os e-mails encontrados, identificará a tabela <
 As informações serão então encaminhadas para o processo de geração do PowerPoint.
 </p>
 
-<h3>6. Consulte o PowerPoint gerado</h3>
+<h3>7. Consulte o PowerPoint gerado</h3>
 
 <p>
 Ao final da execução, o relatório estará disponível na pasta:
@@ -429,7 +570,7 @@ GMUD-AAAA-MM.pptx
 A apresentação utilizará o modelo corporativo definido em <b>templates/release_para_dev.pptx</b>.
 </p>
 
-<h3>7. Execuções posteriores</h3>
+<h3>8. Execuções posteriores</h3>
 
 <p>
 Após o primeiro login, a sessão do Outlook é armazenada na pasta:
@@ -440,12 +581,20 @@ Após o primeiro login, a sessão do Outlook é armazenada na pasta:
 </pre>
 
 <p>
-Nas próximas execuções, normalmente não será necessário realizar o login novamente. Basta executar:
+Nas próximas execuções, normalmente não será necessário realizar o login novamente.
+</p>
+
+<p>
+Basta executar novamente:
 </p>
 
 <pre>
-npm start
+gerar_releasenotes.bat
 </pre>
+
+<p>
+e informar o mês desejado.
+</p>
 
 <p>
 Caso a sessão tenha expirado por política do tenant, o Outlook solicitará um novo login. Realize a autenticação novamente e continue o processo normalmente.
@@ -454,9 +603,13 @@ Caso a sessão tenha expirado por política do tenant, o Outlook solicitará um 
 <h3>📌 Resumo rápido</h3>
 
 <pre>
-npm install
-npx playwright install chromium
-npm start
+gerar_releasenotes.bat
+        ↓
+Seleção do mês
+        ↓
+GMUD_MES
+        ↓
+node index.js
         ↓
 Login no Outlook
         ↓
@@ -505,8 +658,6 @@ Durante a execução, os arquivos são armazenados na pasta <b>output/</b>.
   <li><b>pedido-N.png</b> - captura do pedido de aprovação</li>
   <li><b>resposta-N.png</b> - captura da resposta da aprovação</li>
   <li><b>config-pptx.json</b> - dados utilizados pelo gerador Python</li>
-  <li><b>debug-rascunho-N.png</b> - captura utilizada para diagnóstico</li>
-  <li><b>debug-rascunho-N.txt</b> - conteúdo textual utilizado para diagnóstico</li>
 </ul>
 
 ---
@@ -583,6 +734,7 @@ Essa abordagem permite manter a identidade visual original da apresentação, in
   <li>📄 O modelo <b>release_para_dev.pptx</b> precisa estar disponível no diretório configurado</li>
   <li>🐍 O ambiente Python precisa possuir as bibliotecas necessárias para geração do PPTX</li>
   <li>📧 Alterações na estrutura dos e-mails ou da tabela <b>UAT - Implantação GMUD</b> podem afetar a extração</li>
+  <li>🪟 O arquivo <b>gerar_releasenotes.bat</b> é destinado à execução em ambiente Windows</li>
 </ul>
 
 ---
@@ -600,6 +752,7 @@ Essa abordagem permite manter a identidade visual original da apresentação, in
   <li>PowerPoint / PPTX</li>
   <li>HTML / DOM</li>
   <li>Regex</li>
+  <li>Windows Batch</li>
 </ul>
 
 ---
@@ -620,6 +773,14 @@ Essa abordagem permite manter a identidade visual original da apresentação, in
 <h2>📊 Resultado</h2>
 
 <p align="center">
+  <b>gerar_releasenotes.bat</b>
+  <br>
+  ↓
+  <br>
+  <b>Seleção do período</b>
+  <br>
+  ↓
+  <br>
   <b>Outlook Web</b>
   <br>
   ↓
