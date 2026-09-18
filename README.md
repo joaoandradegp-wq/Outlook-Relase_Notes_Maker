@@ -21,7 +21,7 @@ O <b>Release Notes Maker</b> é uma ferramenta desenvolvida para automatizar a c
 </p>
 
 <p>
-O sistema realiza a busca de e-mails com o assunto <b>"De acordo de negócios GMUD"</b>, enviados para o endereço configurado, e extrai automaticamente as informações de <b>"Registro de origem"</b> presentes na tabela <b>"UAT - Implantação GMUD"</b>.
+O sistema realiza a busca de e-mails com o assunto <b>"De acordo de negócios GMUD"</b>, enviados para o destinatário configurado, e extrai automaticamente as informações de <b>"Registro de origem"</b> presentes na tabela <b>"UAT - Implantação GMUD"</b>.
 </p>
 
 <p>
@@ -77,7 +77,7 @@ Após a extração das informações, o Node.js prepara os dados e chama o <b>ge
 
 <ul>
   <li>📧 Busca automática de e-mails de aprovação GMUD</li>
-  <li>🔎 Pesquisa por assunto e destinatário</li>
+  <li>🔎 Pesquisa por assunto e destinatário configurado</li>
   <li>📅 Processamento automático do mês anterior ao mês de execução</li>
   <li>📋 Extração automática do campo <b>Registro de origem</b></li>
   <li>🧩 Suporte à tabela <b>UAT - Implantação GMUD</b></li>
@@ -197,15 +197,11 @@ De acordo de negócios GMUD
 </pre>
 
 <p>
-Além do assunto, a busca considera o destinatário configurado:
+O destinatário utilizado na pesquisa é definido através da configuração <b>destinatario</b> no arquivo <b>index.js</b>.
 </p>
 
-<pre>
-jessica.fachina@unidas.com.br
-</pre>
-
 <p>
-O período de busca considera o mês anterior ao mês em que o script é executado, abrangendo desde o primeiro até o último dia do mês anterior.
+Dessa forma, o endereço utilizado pela automação não precisa ser exposto na documentação ou diretamente no código de processamento.
 </p>
 
 <p>
@@ -221,7 +217,7 @@ Por padrão, o sistema processa o <b>mês anterior ao mês de execução</b>.
 </p>
 
 <p>
-Por exemplo, uma execução realizada em outubro processará os e-mails correspondentes ao período de setembro, considerando do primeiro ao último dia do mês.
+Por exemplo, uma execução realizada em outubro processará os e-mails correspondentes ao período de setembro, considerando do primeiro até o último dia do mês.
 </p>
 
 <p>
@@ -305,22 +301,20 @@ A pasta <b>.owa-session</b> contém informações de sessão e não deve ser ver
 <h2>⚙️ Configuração</h2>
 
 <p>
-As configurações relacionadas ao comportamento da automação ficam definidas no código do projeto.
-</p>
-
-<p>
-Entre os principais parâmetros estão:
+As principais configurações relacionadas ao comportamento da automação ficam concentradas no objeto <b>CONFIG</b> do arquivo <b>index.js</b>.
 </p>
 
 <ul>
-  <li><b>Outlook Web</b> - endereço utilizado para acesso à plataforma</li>
-  <li><b>Destinatário</b> - endereço utilizado como filtro da pesquisa</li>
-  <li><b>Assunto</b> - texto utilizado para localizar os e-mails GMUD</li>
-  <li><b>Período</b> - intervalo correspondente ao mês anterior</li>
-  <li><b>Tabela GMUD</b> - identificação da tabela <b>UAT - Implantação GMUD</b></li>
-  <li><b>Registro de origem</b> - campo utilizado para extração das demandas</li>
-  <li><b>Output</b> - diretório utilizado para armazenar os arquivos gerados</li>
-  <li><b>Template PowerPoint</b> - modelo utilizado para geração da apresentação</li>
+  <li><b>outlookUrl</b> - endereço utilizado para acesso ao Outlook Web</li>
+  <li><b>destinatario</b> - endereço utilizado como filtro da pesquisa</li>
+  <li><b>assuntoBusca</b> - assunto utilizado na pesquisa dos e-mails</li>
+  <li><b>assuntoRegex</b> - validação adicional do assunto</li>
+  <li><b>tituloTabelaRegex</b> - identificação da tabela GMUD</li>
+  <li><b>labelRegistroOrigem</b> - identificação do campo de origem</li>
+  <li><b>outputDir</b> - diretório dos arquivos gerados</li>
+  <li><b>templatePptx</b> - caminho do modelo PowerPoint</li>
+  <li><b>gerarPptxScript</b> - caminho do script Python</li>
+  <li><b>pythonBin</b> - interpretador Python utilizado para gerar o PPTX</li>
 </ul>
 
 ---
@@ -356,4 +350,301 @@ O navegador será aberto automaticamente.
 O <b>Release Notes Maker</b> foi desenvolvido para gerar automaticamente o relatório mensal de aprovações de negócios GMUD a partir dos e-mails disponíveis no Outlook Web.
 </p>
 
-<h3>1. Instale as depen
+<h3>1. Instale as dependências</h3>
+
+<p>
+Na primeira utilização, abra o terminal na pasta do projeto e execute:
+</p>
+
+<pre>
+npm install
+npx playwright install chromium
+</pre>
+
+<h3>2. Inicie a aplicação</h3>
+
+<p>
+Execute:
+</p>
+
+<pre>
+npm start
+</pre>
+
+<h3>3. Faça o login no Outlook</h3>
+
+<p>
+Na primeira execução, uma janela do Chromium será aberta automaticamente com o Outlook Web.
+</p>
+
+<p>
+Realize o login utilizando suas credenciais corporativas e conclua o MFA, caso seja solicitado.
+</p>
+
+<h3>4. Inicie o processamento</h3>
+
+<p>
+Após o carregamento da caixa de entrada, volte ao terminal e pressione <b>ENTER</b>.
+</p>
+
+<p>
+A aplicação iniciará automaticamente a busca pelos e-mails que atendem aos critérios configurados:
+</p>
+
+<ul>
+  <li>Assunto configurado em <b>assuntoBusca</b></li>
+  <li>Destinatário configurado em <b>destinatario</b></li>
+  <li>Período correspondente ao mês anterior à execução</li>
+</ul>
+
+<h3>5. Aguarde o processamento</h3>
+
+<p>
+O sistema abrirá e processará os e-mails encontrados, identificará a tabela <b>UAT - Implantação GMUD</b> e extrairá os registros do campo <b>Registro de origem</b>.
+</p>
+
+<p>
+As informações serão então encaminhadas para o processo de geração do PowerPoint.
+</p>
+
+<h3>6. Consulte o PowerPoint gerado</h3>
+
+<p>
+Ao final da execução, o relatório estará disponível na pasta:
+</p>
+
+<pre>
+output/
+</pre>
+
+<p>
+O arquivo seguirá o padrão:
+</p>
+
+<pre>
+GMUD-AAAA-MM.pptx
+</pre>
+
+<p>
+A apresentação utilizará o modelo corporativo definido em <b>templates/release_para_dev.pptx</b>.
+</p>
+
+<h3>7. Execuções posteriores</h3>
+
+<p>
+Após o primeiro login, a sessão do Outlook é armazenada na pasta:
+</p>
+
+<pre>
+.owa-session/
+</pre>
+
+<p>
+Nas próximas execuções, normalmente não será necessário realizar o login novamente. Basta executar:
+</p>
+
+<pre>
+npm start
+</pre>
+
+<p>
+Caso a sessão tenha expirado por política do tenant, o Outlook solicitará um novo login. Realize a autenticação novamente e continue o processo normalmente.
+</p>
+
+<h3>📌 Resumo rápido</h3>
+
+<pre>
+npm install
+npx playwright install chromium
+npm start
+        ↓
+Login no Outlook
+        ↓
+Pressione ENTER
+        ↓
+Busca dos e-mails GMUD
+        ↓
+Extração do Registro de origem
+        ↓
+Geração do PowerPoint
+        ↓
+output/GMUD-AAAA-MM.pptx
+</pre>
+
+---
+
+<h2>🐍 Dependências Python</h2>
+
+<p>
+O <b>gerar_pptx.py</b> utiliza Python para manipular o arquivo PowerPoint e as imagens utilizadas na apresentação.
+</p>
+
+<p>
+As principais bibliotecas utilizadas são:
+</p>
+
+<ul>
+  <li><b>python-pptx</b> - manipulação e geração do PowerPoint</li>
+  <li><b>Pillow</b> - leitura, recorte e dimensionamento das imagens</li>
+</ul>
+
+<p>
+O ambiente Python utilizado pelo projeto precisa possuir as bibliotecas necessárias para executar o script de geração do PowerPoint.
+</p>
+
+---
+
+<h2>📁 Arquivos gerados</h2>
+
+<p>
+Durante a execução, os arquivos são armazenados na pasta <b>output/</b>.
+</p>
+
+<ul>
+  <li><b>GMUD-AAAA-MM.pptx</b> - apresentação final</li>
+  <li><b>pedido-N.png</b> - captura do pedido de aprovação</li>
+  <li><b>resposta-N.png</b> - captura da resposta da aprovação</li>
+  <li><b>config-pptx.json</b> - dados utilizados pelo gerador Python</li>
+  <li><b>debug-rascunho-N.png</b> - captura utilizada para diagnóstico</li>
+  <li><b>debug-rascunho-N.txt</b> - conteúdo textual utilizado para diagnóstico</li>
+</ul>
+
+---
+
+<h2>🛟 Tratamento de conteúdo do Outlook</h2>
+
+<p>
+O Outlook Web pode apresentar diferenças na estrutura do conteúdo dependendo do idioma, versão da interface ou configuração do tenant.
+</p>
+
+<p>
+O sistema possui mecanismos para localizar os elementos necessários mesmo quando pequenas alterações ocorrem na interface.
+</p>
+
+<p>
+Os pontos mais sensíveis estão relacionados aos seletores utilizados pelo Playwright:
+</p>
+
+<ul>
+  <li>🔎 <b>Caixa de busca</b> - seletor baseado em <b>aria-label</b>, como "Search" ou "Pesquisar"</li>
+  <li>📧 <b>Lista de e-mails</b> - utilização de elementos com <b>[role="option"]</b></li>
+  <li>📄 <b>Corpo do e-mail</b> - utilização de iframe, como <b>iframe[title="Message Body"]</b></li>
+</ul>
+
+<p>
+Caso o script não encontre algum elemento, a execução pode ser acompanhada visualmente porque o navegador é iniciado com <b>headless: false</b>.
+</p>
+
+<p>
+Nesses casos, o DevTools do navegador pode ser utilizado para verificar a estrutura atual dos elementos e ajustar os seletores marcados no código com:
+</p>
+
+<pre>
+AJUSTAR SE PRECISAR
+</pre>
+
+---
+
+<h2>🎨 Modelo PowerPoint</h2>
+
+<p>
+O arquivo:
+</p>
+
+<pre>
+templates/release_para_dev.pptx
+</pre>
+
+<p>
+é utilizado como base visual da apresentação.
+</p>
+
+<p>
+O projeto utiliza o próprio modelo corporativo como estrutura da apresentação, evitando recriar o layout através de código.
+</p>
+
+<p>
+Os dados extraídos dos e-mails são inseridos no modelo de acordo com a estrutura definida no PowerPoint.
+</p>
+
+<p>
+Essa abordagem permite manter a identidade visual original da apresentação, incluindo fontes, imagens, fundos, posicionamento e elementos gráficos.
+</p>
+
+---
+
+<h2>⚠️ Limitações conhecidas</h2>
+
+<ul>
+  <li>🌐 Os seletores utilizados pelo Playwright dependem da estrutura atual do Outlook Web</li>
+  <li>🖥️ Alterações na interface do Outlook podem exigir ajustes nos seletores</li>
+  <li>🔐 A autenticação depende de uma sessão válida do navegador</li>
+  <li>⏳ O token da sessão pode expirar de acordo com as políticas do tenant</li>
+  <li>📄 O modelo <b>release_para_dev.pptx</b> precisa estar disponível no diretório configurado</li>
+  <li>🐍 O ambiente Python precisa possuir as bibliotecas necessárias para geração do PPTX</li>
+  <li>📧 Alterações na estrutura dos e-mails ou da tabela <b>UAT - Implantação GMUD</b> podem afetar a extração</li>
+</ul>
+
+---
+
+<h2>🛠 Tecnologias</h2>
+
+<ul>
+  <li>Node.js</li>
+  <li>JavaScript</li>
+  <li>Playwright</li>
+  <li>Python</li>
+  <li>python-pptx</li>
+  <li>Pillow</li>
+  <li>Outlook Web</li>
+  <li>PowerPoint / PPTX</li>
+  <li>HTML / DOM</li>
+  <li>Regex</li>
+</ul>
+
+---
+
+<h2>🔮 Próximos passos</h2>
+
+<ul>
+  <li>⚙️ Tornar as configurações externas ao código</li>
+  <li>📅 Facilitar a seleção de períodos diretamente na execução</li>
+  <li>🧪 Ampliar os mecanismos de diagnóstico</li>
+  <li>🌐 Tornar os seletores do Outlook mais resilientes a alterações de interface</li>
+  <li>📊 Expandir as informações apresentadas no relatório</li>
+  <li>⏰ Automatizar a execução periódica do processo</li>
+</ul>
+
+---
+
+<h2>📊 Resultado</h2>
+
+<p align="center">
+  <b>Outlook Web</b>
+  <br>
+  ↓
+  <br>
+  <b>E-mails GMUD</b>
+  <br>
+  ↓
+  <br>
+  <b>Registro de origem</b>
+  <br>
+  ↓
+  <br>
+  <b>Demandas GMUD</b>
+  <br>
+  ↓
+  <br>
+  <b>Template Corporativo</b>
+  <br>
+  ↓
+  <br>
+  <b>PowerPoint</b>
+</p>
+
+---
+
+<p align="center">
+<b>Release Notes Maker</b> automatiza a consolidação das aprovações de negócios GMUD, transformando informações presentes nos e-mails do Outlook em uma apresentação PowerPoint estruturada e pronta para utilização.
+</p>
