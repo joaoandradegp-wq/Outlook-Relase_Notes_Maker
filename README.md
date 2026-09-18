@@ -1,4 +1,4 @@
-<h1 align="center">📧 Outlook GMUD PPTX</h1>
+<h1 align="center">📧 Outlook Release Notes Maker</h1>
 
 <p align="center">
 Automação para consulta de aprovações GMUD no Outlook Web, extração das demandas e geração automática de apresentações PowerPoint a partir de um modelo corporativo.
