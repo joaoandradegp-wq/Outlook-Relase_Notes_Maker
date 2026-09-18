@@ -608,21 +608,6 @@ AJUSTAR SE PRECISAR
 
 ---
 
-<h2>⚠️ Limitações conhecidas</h2>
-
-<ul>
-  <li>🌐 Os seletores utilizados pelo Playwright dependem da estrutura atual do Outlook Web</li>
-  <li>🖥️ Alterações na interface do Outlook podem exigir ajustes nos seletores</li>
-  <li>🔐 A autenticação depende de uma sessão válida do navegador</li>
-  <li>⏳ O token da sessão pode expirar de acordo com as políticas do tenant</li>
-  <li>📄 O modelo <b>release_para_dev.pptx</b> precisa estar disponível no diretório configurado</li>
-  <li>🐍 O ambiente Python precisa possuir as bibliotecas necessárias para geração do PPTX</li>
-  <li>📧 Alterações na estrutura dos e-mails ou da tabela <b>UAT - Implantação GMUD</b> podem afetar a extração</li>
-  <li>🪟 O arquivo <b>gerar_releasenotes.bat</b> é destinado à execução em ambiente Windows</li>
-</ul>
-
----
-
 <h2>🛠 Tecnologias</h2>
 
 <ul>
