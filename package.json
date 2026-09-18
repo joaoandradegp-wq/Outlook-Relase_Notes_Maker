@@ -1,0 +1,13 @@
+{
+  "name": "outlook-gmud-pptx",
+  "version": "1.0.0",
+  "description": "Le e-mails do Outlook Web (GMUD) e gera um PPTX com o Registro de Origem",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0",
+    "pptxgenjs": "^3.12.0"
+  }
+}
