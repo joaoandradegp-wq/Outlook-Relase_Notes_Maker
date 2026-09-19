@@ -36,11 +36,6 @@ const CONFIG = {
   // linha de demanda tipo "711716 - OPORTUNIDADE / LEAD | ..." ou "User Story 716019: ...".
   regexLinhaDemanda: /^(user\s*story\s*)?\d{4,}/i,
   outputDir: path.join(__dirname, 'output'),
-  // Só entram e-mails em que a Jessica enviou pelo menos uma mensagem na conversa (o usuário
-  // é copiado nos "de acordo" de outras BOs, e esses NÃO devem entrar). Casa com o nome ou o
-  // e-mail dela nas linhas "De:" / "From:" do histórico do rascunho de encaminhamento.
-  // Coloque null pra desligar o filtro.
-  remetenteAprovador: /jessica\s*fachina|jessica\.fachina@unidas\.com\.br/i,
   // TEMPOS DE ESPERA (ms) do fluxo "Encaminhar". Se algum e-mail ainda vier sem as demandas,
   // aumente estes valores (principalmente registroOrigem e corpoEstabilizar).
   tempos: {
@@ -175,16 +170,13 @@ async function buscarEmails(page) {
   const dataInicio = formatarDataOWA(intervaloMes.inicio);
   const dataFim = formatarDataOWA(intervaloMes.fim);
 
-  // Query validada manualmente pelo usuário (funciona em "Todas as pastas"):
-  // subject:"..." participants:jessica (received:X..Y OR sent:X..Y)
-  // "participants:" (não "to:") porque a Jessica é a destinatária, mas a lista de
-  // resultados mostra o remetente da mensagem MAIS RECENTE da conversa — que costuma
-  // ser a própria Jessica respondendo "DE ACORDO", mas nem sempre (por isso não dá pra
-  // confiar em checar o nome dela no texto da linha; "participants:" resolve isso no
-  // nível da busca, cobrindo Para/De/Cc/Cco de qualquer mensagem da conversa).
-  // O bug anterior de "participants: quebra o filtro de data" era na verdade causado pelo
-  // formato errado de data (mm/dd em vez de dd/mm) em formatarDataOWA — já corrigido.
-  const query = `subject:"${CONFIG.assuntoBusca}" participants:${CONFIG.destinatario} (received:${dataInicio}..${dataFim} OR sent:${dataInicio}..${dataFim})`;
+  // Query: só conversas em que a JESSICA ENVIOU uma mensagem (o "DE ACORDO" dela):
+  // subject:"..." from:jessica (received:X..Y OR sent:X..Y)
+  // Antes era "participants:", que também trazia "de acordo" de OUTRAS BOs em que o usuário
+  // só era copiado (participants casa com Para/De/Cc/Cco de qualquer mensagem). Com "from:"
+  // esses ficam de fora já na busca. Datas no formato dd/mm/yyyy (o Outlook Web espera dia
+  // primeiro — ver formatarDataOWA).
+  const query = `subject:"${CONFIG.assuntoBusca}" from:${CONFIG.destinatario} (received:${dataInicio}..${dataFim} OR sent:${dataInicio}..${dataFim})`;
 
   const caixaBusca = localizarCaixaBusca(page);
 
@@ -571,30 +563,6 @@ async function rolarCorpoParaCarregar(page) {
   }
 }
 
-// Lê, no corpo do rascunho de encaminhamento, todas as linhas de cabeçalho "De:" / "From:"
-// do histórico (uma por mensagem da conversa) e devolve os remetentes. Serve pra confirmar
-// que a conversa realmente tem mensagem da aprovadora (Jessica) e não é de outra BO.
-async function lerRemetentesDoRascunho(contextos) {
-  const remetentes = [];
-  for (const ctx of contextos) {
-    let texto = '';
-    try {
-      texto = await ctx.locator('body').innerText({ timeout: 3000 });
-    } catch {
-      continue;
-    }
-    const linhas = texto.split('\n').map((l) => l.trim());
-    for (let i = 0; i < linhas.length; i++) {
-      const m = linhas[i].match(/^(?:De|From)\s*:\s*(.*)$/i);
-      if (!m) continue;
-      let valor = m[1].trim();
-      if (!valor) valor = (linhas.slice(i + 1).find(Boolean) || '').trim(); // valor na linha seguinte
-      if (valor && !remetentes.includes(valor)) remetentes.push(valor);
-    }
-  }
-  return remetentes;
-}
-
 // Método principal de extração: usa o "Encaminhar", que faz o Outlook Web pré-popular
 // o corpo do e-mail com TODO o histórico da conversa já expandido (é assim que
 // encaminhamento sempre funcionou, pra quem recebe ver a conversa inteira sem precisar
@@ -703,9 +671,6 @@ async function buscarTabelaViaEncaminhar(page, indice) {
     );
   }
 
-  // Remetentes das mensagens da conversa (lidos antes de descartar o rascunho).
-  const remetentes = await lerRemetentesDoRascunho(todosOsContextos(page));
-
   // Descarta o rascunho de encaminhamento sem enviar, pra não deixar lixo na caixa.
   // Tenta "Descartar" direto primeiro; se não achar, tenta "Fechar" (nome ANCORADO — ver
   // construirEstrategiasBotao acima — pra nunca casar com "Fechar pesquisa").
@@ -730,14 +695,14 @@ async function buscarTabelaViaEncaminhar(page, indice) {
     }
   }
 
-  return { ...resultado, demandasFallback, remetentes };
+  return { ...resultado, demandasFallback };
 }
 
 async function processarEmail(page, indice, intervaloMes) {
   const itens = page.locator('[role="option"]');
 
   // Não filtramos mais por data nem por remetente aqui: a busca do Outlook Web
-  // (subject + participants:jessica + received/sent no intervalo) já garante isso.
+  // (subject + from:jessica + received/sent no intervalo) já garante isso.
   // Filtrar de novo lendo o texto da linha era redundante e frágil (ex: itens recentes
   // aparecem sem o ano na data, e o "remetente" visível na prévia nem sempre é a Jessica,
   // já que ela é a destinatária e pode não ser quem enviou a última mensagem da conversa).
@@ -751,7 +716,7 @@ async function processarEmail(page, indice, intervaloMes) {
     return null;
   }
 
-  console.log(`  - Item ${indice}: assunto OK, abrindo...`);
+  console.log(`  - Item ${indice}: assunto OK, abrindo... [lista: ${textoLinha.replace(/\s+/g, ' ').slice(0, 140)}]`);
 
   // AJUSTAR SE PRECISAR: reabre a lista a cada iteração para evitar referências obsoletas
   await itens.nth(indice).click();
@@ -770,18 +735,6 @@ async function processarEmail(page, indice, intervaloMes) {
   // porque essa lógica era genérica/frágil demais e acabava clicando em elementos
   // errados da interface (ex: abrindo o dropdown "Todas as pastas ▾").
   const resultado = await buscarTabelaViaEncaminhar(page, indice);
-  // FILTRO DE APROVADORA: ignora conversas em que a Jessica não enviou nenhuma mensagem
-  // (ex: "de acordo" de outra BO em que o usuário só foi copiado).
-  if (resultado && CONFIG.remetenteAprovador) {
-    const remetentes = resultado.remetentes || [];
-    if (remetentes.length === 0) {
-      console.log(`  - Item ${indice}: aviso — não consegui ler os remetentes do histórico; não dá pra confirmar que é da Jessica, seguindo mesmo assim.`);
-    } else if (!remetentes.some((r) => CONFIG.remetenteAprovador.test(r))) {
-      console.log(`  - Item ${indice}: IGNORADO — a Jessica não enviou nenhuma mensagem nessa conversa (remetentes vistos: ${remetentes.join(' | ')}).`);
-      return null;
-    }
-  }
-
   const htmlConteudo = resultado ? resultado.htmlConteudo : '';
   const labelsEncontrados = resultado ? resultado.labelsEncontrados : [];
   const demandasFallback = resultado ? resultado.demandasFallback || [] : [];
