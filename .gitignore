@@ -1,5 +1,12 @@
+index.js
+gerar_pptx.py
+
 node_modules/
 .owa-session
+
 output/*.pptx
 output/*.png
+!output/.gitkeep
+
 templates/release_para_dev.pptx
+!templates/.gitkeep
